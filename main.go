@@ -12,6 +12,7 @@ import (
 
 	"github.com/willianpc/go-sample-app/dom"
 	"golang.org/x/net/html"
+	"golang.org/x/text/encoding/charmap"
 )
 
 func getText(n *html.Node) string {
@@ -29,19 +30,23 @@ func getText(n *html.Node) string {
 func main() {
 	mux := http.NewServeMux()
 
-	c := http.Client{
+	c := &http.Client{
 		Timeout: time.Second * 30,
 	}
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
-		q := r.URL.Query().Get("q")
 
-		q = url.QueryEscape(q)
-		fmt.Println(q)
+		q := url.QueryEscape(r.URL.Query().Get("q"))
 
 		if q != "" {
-			res, err := c.Get("https://www.google.com/search?q=" + q)
+			req, err := http.NewRequest(http.MethodGet, "https://www.google.com/search?q="+q, nil)
+
+			if err != nil {
+				panic(err)
+			}
+
+			res, err := c.Do(req)
 
 			if err != nil {
 				panic(err)
@@ -49,13 +54,18 @@ func main() {
 
 			b, err := io.ReadAll(res.Body)
 
-			// fmt.Println(string(b))
-
 			if err != nil {
 				panic(err)
 			}
 
 			defer res.Body.Close()
+
+			dec := charmap.Windows1250.NewDecoder()
+			b, err = dec.Bytes(b)
+
+			if err != nil {
+				panic(err)
+			}
 
 			doc, err := html.Parse(bytes.NewReader(b))
 
@@ -69,8 +79,8 @@ func main() {
 			buf := []string{}
 
 			for _, node := range nodes {
-				n1 := (html.Node)(node)
-				text := getText(&n1)
+				n := html.Node(node)
+				text := getText(&n)
 
 				buf = append(buf, text)
 			}
@@ -79,7 +89,8 @@ func main() {
 				"query": "%s",
 				"total": %d,
 				"results": ["%s"]
-			}`, q, len(nodes), strings.Join(buf, `","`))
+			}
+			`, q, len(nodes), strings.Join(buf, `","`))
 
 			return
 		}
