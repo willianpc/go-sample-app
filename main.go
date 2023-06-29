@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -27,6 +28,10 @@ func getText(n *html.Node) string {
 	return ""
 }
 
+func sendError(w http.ResponseWriter, err error) {
+	fmt.Fprintf(w, `{"error": %s}`, err.Error())
+}
+
 func main() {
 	mux := http.NewServeMux()
 
@@ -39,67 +44,70 @@ func main() {
 
 		q := url.QueryEscape(r.URL.Query().Get("q"))
 
-		if q != "" {
-			req, err := http.NewRequest(http.MethodGet, "https://www.google.com/search?q="+q, nil)
+		if q == "" {
+			io.WriteString(w, `{"results": 0}`)
+			return
+		}
 
-			if err != nil {
-				panic(err)
-			}
+		res, err := c.Get("https://www.google.com/search?q=" + q)
 
-			res, err := c.Do(req)
+		if err != nil {
+			sendError(w, err)
+			return
+		}
 
-			if err != nil {
-				panic(err)
-			}
+		b, err := io.ReadAll(res.Body)
 
-			b, err := io.ReadAll(res.Body)
+		if err != nil {
+			sendError(w, err)
+			return
+		}
 
-			if err != nil {
-				panic(err)
-			}
+		defer res.Body.Close()
 
-			defer res.Body.Close()
+		dec := charmap.Windows1250.NewDecoder()
+		b, err = dec.Bytes(b)
 
-			dec := charmap.Windows1250.NewDecoder()
-			b, err = dec.Bytes(b)
+		if err != nil {
+			sendError(w, err)
+			return
+		}
 
-			if err != nil {
-				panic(err)
-			}
+		doc, err := html.Parse(bytes.NewReader(b))
 
-			doc, err := html.Parse(bytes.NewReader(b))
+		if err != nil {
+			sendError(w, err)
+			return
+		}
 
-			if err != nil {
-				panic(err)
-			}
+		de := dom.DomElement(*doc)
+		nodes := de.QuerySelector("h3")
 
-			de := dom.DomElement(*doc)
-			nodes := de.QuerySelector("h3")
+		buf := []string{}
 
-			buf := []string{}
+		for _, node := range nodes {
+			n := html.Node(node)
+			text := getText(&n)
 
-			for _, node := range nodes {
-				n := html.Node(node)
-				text := getText(&n)
+			buf = append(buf, text)
+		}
 
-				buf = append(buf, text)
-			}
-
-			fmt.Fprintf(w, `{
+		fmt.Fprintf(w, `{
 				"query": "%s",
 				"total": %d,
 				"results": ["%s"]
 			}
 			`, q, len(nodes), strings.Join(buf, `","`))
-
-			return
-		}
-
-		io.WriteString(w, `{"results": 0}`)
 	})
 
-	server := http.Server{
-		Addr:    ":9090",
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		port = "9090"
+	}
+
+	server := &http.Server{
+		Addr:    ":" + port,
 		Handler: mux,
 	}
 
