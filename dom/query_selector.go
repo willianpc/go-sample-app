@@ -8,6 +8,26 @@ import (
 
 type DomElement html.Node
 
+func InnerText(n html.Node) string {
+	if n.Type == html.TextNode {
+		return strings.ReplaceAll(n.Data, `"`, `\"`)
+	}
+
+	buf := ""
+
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		if c.Type == html.TextNode {
+			buf += strings.ReplaceAll(c.Data, `"`, `\"`)
+		}
+
+		if c.Type == html.ElementNode {
+			buf += InnerText(*c)
+		}
+	}
+
+	return buf
+}
+
 func genericSelector(e *DomElement, s string) bool {
 	return e.Type == html.ElementNode && e.Data == s
 }
@@ -19,6 +39,20 @@ func classSelector(e *DomElement, s string) bool {
 
 	for _, attr := range e.Attr {
 		if attr.Key == "class" && attr.Val == s[1:] {
+			return true
+		}
+	}
+
+	return false
+}
+
+func idSelector(e *DomElement, s string) bool {
+	if e.Type != html.ElementNode {
+		return false
+	}
+
+	for _, attr := range e.Attr {
+		if attr.Key == "id" && attr.Val == s[1:] {
 			return true
 		}
 	}
@@ -43,6 +77,10 @@ func customDataSelector(e *DomElement, s string) bool {
 func parseSelector(e *DomElement, s string) bool {
 	var fn func(e *DomElement, s string) bool
 	fn = genericSelector
+
+	if strings.HasPrefix(s, "#") {
+		fn = idSelector
+	}
 
 	if strings.HasPrefix(s, ".") {
 		fn = classSelector

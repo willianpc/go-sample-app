@@ -16,18 +16,6 @@ import (
 	"golang.org/x/text/encoding/charmap"
 )
 
-func getText(n *html.Node) string {
-	if n.Type == html.TextNode {
-		return strings.ReplaceAll(n.Data, `"`, `\"`)
-	}
-
-	if c := n.FirstChild; c != nil {
-		return getText(c)
-	}
-
-	return ""
-}
-
 func sendError(w http.ResponseWriter, err error) {
 	fmt.Fprintf(w, `{"error": %s}`, err.Error())
 }
@@ -49,55 +37,68 @@ func main() {
 			return
 		}
 
-		res, err := c.Get("https://www.google.com/search?q=" + q)
+		cacheRes := readCache(q)
 
-		if err != nil {
-			sendError(w, err)
-			return
+		var fromCache bool
+
+		if len(cacheRes) == 0 {
+			res, err := c.Get("https://www.google.com/search?q=" + q)
+
+			if err != nil {
+				sendError(w, err)
+				return
+			}
+
+			b, err := io.ReadAll(res.Body)
+
+			if err != nil {
+				sendError(w, err)
+				return
+			}
+
+			defer res.Body.Close()
+
+			dec := charmap.Windows1250.NewDecoder()
+			b, err = dec.Bytes(b)
+
+			if err != nil {
+				sendError(w, err)
+				return
+			}
+
+			doc, err := html.Parse(bytes.NewReader(b))
+
+			if err != nil {
+				sendError(w, err)
+				return
+			}
+
+			de := dom.DomElement(*doc)
+			nodes := de.QuerySelector("h3")
+
+			for _, node := range nodes {
+				n := html.Node(node)
+				text := dom.InnerText(n)
+				cacheRes = append(cacheRes, text)
+			}
+
+			if err = writeCache(q, cacheRes); err != nil {
+				sendError(w, err)
+				return
+			}
+		} else {
+			fromCache = true
 		}
 
-		b, err := io.ReadAll(res.Body)
-
-		if err != nil {
-			sendError(w, err)
-			return
-		}
-
-		defer res.Body.Close()
-
-		dec := charmap.Windows1250.NewDecoder()
-		b, err = dec.Bytes(b)
-
-		if err != nil {
-			sendError(w, err)
-			return
-		}
-
-		doc, err := html.Parse(bytes.NewReader(b))
-
-		if err != nil {
-			sendError(w, err)
-			return
-		}
-
-		de := dom.DomElement(*doc)
-		nodes := de.QuerySelector("h3")
-
-		buf := []string{}
-
-		for _, node := range nodes {
-			n := html.Node(node)
-			text := getText(&n)
-
-			buf = append(buf, text)
-		}
+		cacheAsArray := `["` + strings.Join(cacheRes, `", "`) + `"]`
 
 		fmt.Fprintf(w, `{
-				"query": "%s",
 				"total": %d,
-				"results": ["%s"]
+				"query": "%s",
+				"results": %s,
+				"cached": %v
 			}
-			`, q, len(nodes), strings.Join(buf, `","`))
+			`, len(cacheRes), q, cacheAsArray, fromCache)
 	})
 
 	port := os.Getenv("PORT")
