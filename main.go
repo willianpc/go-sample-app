@@ -7,16 +7,23 @@ import (
 	"time"
 
 	redis "github.com/go-redis/redis/v8"
+	instana "github.com/instana/go-sensor"
 )
 
 var (
+	s   instana.TracerLogger
 	c   *http.Client
 	rdb *redis.Client
 )
 
 func init() {
+	s = instana.InitCollector(&instana.Options{
+		Service: "Go Sample App",
+	})
+
 	c = &http.Client{
-		Timeout: time.Second * 30,
+		Timeout:   time.Second * 30,
+		Transport: instana.RoundTripper(s, nil),
 	}
 
 	rdb = redis.NewClient(&redis.Options{Addr: ":6379"})
