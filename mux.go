@@ -33,7 +33,14 @@ func handleRoot() func(w http.ResponseWriter, r *http.Request) {
 		var fromCache bool
 
 		if len(cacheRes) == 0 {
-			res, err := c.Get("https://www.google.com/search?q=" + q)
+			req, err := http.NewRequest(http.MethodGet, "https://www.google.com/search?q="+q, nil)
+
+			if err != nil {
+				sendError(w, err)
+				return
+			}
+
+			res, err := c.Do(req)
 
 			if err != nil {
 				sendError(w, err)
