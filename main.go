@@ -4,10 +4,20 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
+var (
+	c *http.Client
+)
+
+func init() {
+	c = &http.Client{
+		Timeout: time.Second * 30,
+	}
+}
+
 func main() {
-	var h handler = handleFunc()
 	port := os.Getenv("PORT")
 
 	if port == "" {
@@ -16,7 +26,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:    ":" + port,
-		Handler: h,
+		Handler: handleFunc(),
 	}
 
 	log.Fatal(server.ListenAndServe())

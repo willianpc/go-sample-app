@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/willianpc/go-sample-app/dom"
 	"golang.org/x/net/html"
@@ -18,24 +17,14 @@ func sendError(w http.ResponseWriter, err error) {
 	fmt.Fprintf(w, `{"error": %s}`, err.Error())
 }
 
-type handler func(w http.ResponseWriter, r *http.Request)
-
-func (h handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	h(w, req)
-}
-
-func handleFunc() handler {
-	c := &http.Client{
-		Timeout: time.Second * 30,
-	}
-
+func handleRoot() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 
 		q := url.QueryEscape(r.URL.Query().Get("q"))
 
 		if q == "" {
-			io.WriteString(w, `{"results": 0}`)
+			_, _ = io.WriteString(w, `{"results": 0}`)
 			return
 		}
 
@@ -96,4 +85,11 @@ func handleFunc() handler {
 
 		fmt.Fprintf(w, `{"total": %d,"query": "%s","results": %s, "cached": %v}`, len(cacheRes), q, cacheAsArray, fromCache)
 	}
+}
+
+func handleFunc() http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", handleRoot())
+
+	return mux
 }
