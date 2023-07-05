@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	instana "github.com/instana/go-sensor"
+	ot "github.com/opentracing/opentracing-go"
 	"github.com/willianpc/go-sample-app/dom"
 	"golang.org/x/net/html"
 	"golang.org/x/text/encoding/charmap"
@@ -34,6 +35,20 @@ func handleSearch() func(w http.ResponseWriter, r *http.Request) {
 		var fromCache bool
 
 		if len(cacheRes) == 0 {
+			var ps ot.Span
+			var ok bool
+
+			if ps, ok = instana.SpanFromContext(r.Context()); !ok {
+				// no parent span found, create an artificial parent span
+				ps = s.StartSpan("entry-span")
+			}
+
+			// Important! To finish the span
+			defer ps.Finish()
+
+			// New context containing the parent span, mandatory
+			rctx := instana.ContextWithSpan(r.Context(), ps)
+
 			req, err := http.NewRequest(http.MethodGet, "https://www.google.com/search?q="+q, nil)
 
 			if err != nil {
@@ -41,7 +56,7 @@ func handleSearch() func(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			res, err := c.Do(req)
+			res, err := c.Do(req.WithContext(rctx))
 
 			if err != nil {
 				sendError(w, err)
