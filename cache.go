@@ -7,7 +7,11 @@ import (
 	redis "github.com/go-redis/redis/v8"
 )
 
-var rdb = redis.NewClient(&redis.Options{Addr: ":6379"})
+var rdb *redis.Client
+
+func init() {
+	rdb = redis.NewClient(&redis.Options{Addr: ":6379"})
+}
 
 func readCache(key string) []string {
 	return rdb.SMembers(context.Background(), key).Val()
