@@ -22,8 +22,7 @@ func init() {
 	})
 
 	c = &http.Client{
-		Timeout:   time.Second * 30,
-		Transport: instana.RoundTripper(s, nil),
+		Timeout: time.Second * 30,
 	}
 
 	rdb = redis.NewClient(&redis.Options{Addr: ":6379"})

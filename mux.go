@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strings"
 
+	instana "github.com/instana/go-sensor"
 	"github.com/willianpc/go-sample-app/dom"
 	"golang.org/x/net/html"
 	"golang.org/x/text/encoding/charmap"
@@ -96,7 +97,7 @@ func handleSearch() func(w http.ResponseWriter, r *http.Request) {
 
 func handleFunc() http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/query", handleSearch())
+	mux.HandleFunc("/query", instana.TracingHandlerFunc(s, "/query", handleSearch()))
 
 	return mux
 }
