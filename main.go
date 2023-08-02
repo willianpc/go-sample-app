@@ -23,6 +23,7 @@ func init() {
 	})
 
 	rdb = redis.NewClient(&redis.Options{Addr: ":6379"})
+
 	instaredis.WrapClient(rdb, s)
 
 	c = &http.Client{
