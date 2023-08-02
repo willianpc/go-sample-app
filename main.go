@@ -5,16 +5,21 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	redis "github.com/go-redis/redis/v8"
 )
 
 var (
-	c *http.Client
+	c   *http.Client
+	rdb *redis.Client
 )
 
 func init() {
 	c = &http.Client{
 		Timeout: time.Second * 30,
 	}
+
+	rdb = redis.NewClient(&redis.Options{Addr: ":6379"})
 }
 
 func main() {

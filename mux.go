@@ -80,7 +80,7 @@ func handleSearch() func(w http.ResponseWriter, r *http.Request) {
 				cacheRes = append(cacheRes, text)
 			}
 
-			if err = writeCache(q, cacheRes); err != nil {
+			if err = writeCache(r.Context(), q, cacheRes); err != nil {
 				sendError(w, err)
 				return
 			}
