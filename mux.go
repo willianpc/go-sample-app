@@ -17,7 +17,7 @@ func sendError(w http.ResponseWriter, err error) {
 	fmt.Fprintf(w, `{"error": %s}`, err.Error())
 }
 
-func handleRoot() func(w http.ResponseWriter, r *http.Request) {
+func handleSearch() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 
@@ -96,7 +96,7 @@ func handleRoot() func(w http.ResponseWriter, r *http.Request) {
 
 func handleFunc() http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", handleRoot())
+	mux.HandleFunc("/search", handleSearch())
 
 	return mux
 }
