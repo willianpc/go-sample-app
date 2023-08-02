@@ -1,12 +1,13 @@
 package main
 
 import (
-	redis "github.com/go-redis/redis/v8"
-	instana "github.com/instana/go-sensor"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	redis "github.com/go-redis/redis/v8"
+	instana "github.com/instana/go-sensor"
 )
 
 var (
