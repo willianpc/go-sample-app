@@ -96,7 +96,7 @@ func handleSearch() func(w http.ResponseWriter, r *http.Request) {
 
 func handleFunc() http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/search", handleSearch())
+	mux.HandleFunc("/query", handleSearch())
 
 	return mux
 }
