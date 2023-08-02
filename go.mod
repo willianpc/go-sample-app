@@ -7,6 +7,7 @@ require golang.org/x/net v0.11.0
 require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/instana/go-sensor v1.55.2
+	github.com/instana/go-sensor/instrumentation/instaredis v1.6.0
 	github.com/opentracing/opentracing-go v1.2.0
 	golang.org/x/text v0.10.0
 )

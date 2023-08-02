@@ -8,6 +8,7 @@ import (
 
 	redis "github.com/go-redis/redis/v8"
 	instana "github.com/instana/go-sensor"
+	"github.com/instana/go-sensor/instrumentation/instaredis"
 )
 
 var (
@@ -22,6 +23,7 @@ func init() {
 	})
 
 	rdb = redis.NewClient(&redis.Options{Addr: ":6379"})
+	instaredis.WrapClient(rdb, s)
 
 	c = &http.Client{
 		Timeout:   time.Second * 30,
