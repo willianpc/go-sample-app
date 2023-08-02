@@ -21,6 +21,8 @@ func init() {
 		Service: "Go Sample App",
 	})
 
+	rdb = redis.NewClient(&redis.Options{Addr: ":6379"})
+
 	c = &http.Client{
 		Timeout: time.Second * 30,
 	}
