@@ -5,8 +5,8 @@ import (
 	"time"
 )
 
-func readCache(key string) []string {
-	return rdb.SMembers(context.Background(), key).Val()
+func readCache(ctx context.Context, key string) []string {
+	return rdb.SMembers(ctx, key).Val()
 }
 
 func writeCache(ctx context.Context, key string, vals []string) error {

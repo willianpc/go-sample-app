@@ -30,8 +30,6 @@ func init() {
 		Timeout:   time.Second * 30,
 		Transport: instana.RoundTripper(s, nil),
 	}
-
-	rdb = redis.NewClient(&redis.Options{Addr: ":6379"})
 }
 
 func main() {
