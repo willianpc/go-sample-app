@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	redis "github.com/go-redis/redis/v8"
@@ -23,15 +22,12 @@ func init() {
 }
 
 func main() {
-	port := os.Getenv("PORT")
-
-	if port == "" {
-		port = "9090"
-	}
+	mux := http.NewServeMux()
+	mux.HandleFunc("/query", handleSearch)
 
 	server := &http.Server{
-		Addr:    ":" + port,
-		Handler: handleFunc(),
+		Addr:    ":9090",
+		Handler: mux,
 	}
 
 	log.Fatal(server.ListenAndServe())
