@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -34,7 +33,7 @@ func handleSearch(w http.ResponseWriter, r *http.Request) {
 	if len(cacheRes) > 0 {
 		fromCache = true
 	} else {
-		cacheRes = dataFromGoogle(r.Context(), q)
+		cacheRes = dataFromGoogle(r, q)
 	}
 
 	cacheAsArray := `["` + strings.Join(cacheRes, `", "`) + `"]`
@@ -42,7 +41,7 @@ func handleSearch(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, `{"total": %d,"query": "%s","results": %s, "cached": %v}`, len(cacheRes), q, cacheAsArray, fromCache)
 }
 
-func dataFromGoogle(ctx context.Context, q string) []string {
+func dataFromGoogle(incomingRequest *http.Request, q string) []string {
 	var cacheRes []string
 
 	clientReq, _ := http.NewRequest(http.MethodGet, "https://www.google.com/search?q="+q, nil)
@@ -66,7 +65,7 @@ func dataFromGoogle(ctx context.Context, q string) []string {
 	}
 
 	// Update cache
-	_ = writeCache(ctx, q, cacheRes)
+	_ = writeCache(incomingRequest.Context(), q, cacheRes)
 
 	return cacheRes
 }

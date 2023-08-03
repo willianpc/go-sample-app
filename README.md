@@ -26,5 +26,5 @@ A simple Go application which contains the following features:
 
 ## Running the application
 
-1. Call the URL http://localhost:9090?q=myquery
+1. Call the URL http://localhost:9090/query?q=myquery
 
