@@ -15,11 +15,11 @@ var (
 )
 
 func init() {
+	rdb = redis.NewClient(&redis.Options{Addr: ":6379"})
+
 	c = &http.Client{
 		Timeout: time.Second * 30,
 	}
-
-	rdb = redis.NewClient(&redis.Options{Addr: ":6379"})
 }
 
 func main() {
