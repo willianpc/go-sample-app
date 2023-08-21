@@ -22,13 +22,7 @@ func init() {
 }
 
 func main() {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/query", handleSearch)
+	http.HandleFunc("/query", handleSearch)
 
-	server := &http.Server{
-		Addr:    ":9090",
-		Handler: mux,
-	}
-
-	log.Fatal(server.ListenAndServe())
+	log.Fatal(http.ListenAndServe("localhost:9090", nil))
 }
