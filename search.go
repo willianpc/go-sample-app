@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/willianpc/go-sample-app/dom"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/net/html"
 	"golang.org/x/text/encoding/charmap"
 )
@@ -44,7 +47,25 @@ func handleSearch(w http.ResponseWriter, r *http.Request) {
 func dataFromGoogle(incomingRequest *http.Request, q string) []string {
 	var cacheRes []string
 
-	clientReq, _ := http.NewRequest(http.MethodGet, "https://www.google.com/search?q="+q, nil)
+	tr := otel.Tracer("otel-tracer")
+	ctx := incomingRequest.Context()
+
+	var parentSpan trace.Span
+	parentSpan = trace.SpanFromContext(ctx)
+
+	if !parentSpan.SpanContext().HasSpanID() {
+		opts := []trace.SpanStartOption{
+			trace.WithSpanKind(trace.SpanKindServer),
+		}
+
+		ctx, parentSpan = tr.Start(ctx, "client-call-parent-span", opts...)
+	} else {
+		log.Println("there was a span from context")
+	}
+
+	defer parentSpan.End()
+	clientReq, _ := http.NewRequestWithContext(ctx, "GET", "https://www.google.com/search?q="+q, nil)
+
 	clientResp, _ := c.Do(clientReq)
 
 	body, _ := io.ReadAll(clientResp.Body)
