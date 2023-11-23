@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	redis "github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/extra/redisotel/v9"
+	redis "github.com/redis/go-redis/v9"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
@@ -17,6 +18,10 @@ var (
 
 func init() {
 	rdb = redis.NewClient(&redis.Options{Addr: ":6379"})
+
+	if err := redisotel.InstrumentTracing(rdb); err != nil {
+		panic(err)
+	}
 
 	c = &http.Client{
 		Timeout:   time.Second * 30,

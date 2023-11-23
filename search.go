@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -59,8 +58,6 @@ func dataFromGoogle(incomingRequest *http.Request, q string) []string {
 		}
 
 		ctx, parentSpan = tr.Start(ctx, "client-call-parent-span", opts...)
-	} else {
-		log.Println("there was a span from context")
 	}
 
 	defer parentSpan.End()
