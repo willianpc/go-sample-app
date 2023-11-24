@@ -30,7 +30,8 @@ func initProvider() (func(context.Context) error, error) {
 	}
 
 	// traceExporter, err := InstanaExporter()
-	traceExporter, err := JaegerExporter(ctx)
+	// traceExporter, err := JaegerExporter(ctx)
+	traceExporter, err := OtlpExporter(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create trace exporter: %w", err)
 	}
@@ -76,4 +77,8 @@ func JaegerExporter(ctx context.Context) (sdktrace.SpanExporter, error) {
 
 func InstanaExporter() (sdktrace.SpanExporter, error) {
 	return instanaexp.New(), nil
+}
+
+func OtlpExporter(ctx context.Context) (sdktrace.SpanExporter, error) {
+	return otlptracegrpc.New(ctx, otlptracegrpc.WithInsecure())
 }
