@@ -1,0 +1,24 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+processors:
+  batch:
+exporters:
+  logging:
+    loglevel: debug
+  instana:
+    endpoint: ${INSTANA_ENDPOINT_URL}
+    agent_key: ${INSTANA_AGENT_KEY}
+    tls:
+      insecure: false
+      insecure_skip_verify: true
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging, instana]

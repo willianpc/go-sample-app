@@ -20,6 +20,7 @@ func initProvider() (func(context.Context) error, error) {
 	ctx := context.Background()
 
 	res, err := resource.New(ctx,
+		resource.WithProcessPID(),
 		resource.WithAttributes(
 			// the service name used to display traces in backends
 			semconv.ServiceName("test-service"),
@@ -54,15 +55,9 @@ func initProvider() (func(context.Context) error, error) {
 }
 
 func JaegerExporter(ctx context.Context) (sdktrace.SpanExporter, error) {
-	// If the OpenTelemetry Collector is running on a local cluster (minikube or
-	// microk8s), it should be accessible through the NodePort service at the
-	// `localhost:30080` endpoint. Otherwise, replace `localhost` with the
-	// endpoint of your cluster. If you run the app inside k8s, then you can
-	// probably connect directly to the service through dns.
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	conn, err := grpc.DialContext(ctx, "localhost:4317",
-		// Note the use of insecure transport here. TLS is recommended in production.
+	conn, err := grpc.DialContext(ctx, "localhost:43177",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),
 	)
@@ -70,7 +65,6 @@ func JaegerExporter(ctx context.Context) (sdktrace.SpanExporter, error) {
 		return nil, fmt.Errorf("failed to create gRPC connection to collector: %w", err)
 	}
 
-	// Set up a trace exporter
 	traceExporter, err := otlptracegrpc.New(ctx, otlptracegrpc.WithGRPCConn(conn))
 	return traceExporter, err
 }

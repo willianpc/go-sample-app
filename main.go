@@ -43,7 +43,11 @@ func main() {
 		fn(ctx)
 	}()
 
-	http.Handle("/query", otelhttp.NewHandler(http.HandlerFunc(handleSearch), "/query"))
+	mux := http.NewServeMux()
 
-	log.Fatal(http.ListenAndServe("localhost:9090", nil))
+	mux.Handle("/query", otelhttp.WithRouteTag("/query", http.HandlerFunc(handleSearch)))
+
+	// http.Handle("/query", otelhttp.NewHandler(http.HandlerFunc(handleSearch), "/query"))
+
+	log.Fatal(http.ListenAndServe("localhost:9090", otelhttp.NewHandler(mux, "http-server")))
 }

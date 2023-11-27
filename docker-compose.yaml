@@ -6,6 +6,18 @@ services:
     ports:
       - 6379:6379
 
+  otelcol:
+    # To build the image locally, follow the steps in the private repo https://github.ibm.com/Willian-Carvalho/instana-otel-exporter
+    image: localhost/otelcol-contrib-instana:1.0.0
+    ports:
+      - 4317:4317
+    environment:
+      - INSTANA_ENDPOINT_URL=$INSTANA_ENDPOINT_URL
+      - INSTANA_AGENT_KEY=$INSTANA_AGENT_KEY
+    volumes:
+      - $PWD:/app/configs
+    command: ["--config", "/app/configs/otel-config.yaml"]
+
   jaeger:
     image: jaegertracing/all-in-one:latest
     ports:
@@ -17,8 +29,7 @@ services:
       - 14268:14268
       - 14250:14250
       - 9411:9411
-      - 4317:4317
+      - 43177:4317
       - 4318:4318
-
     environment:
       - COLLECTOR_OTLP_ENABLED=true
