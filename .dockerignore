@@ -1,0 +1,7 @@
+Dockerfile
+.vagrant
+.github
+.gitignore
+*.md
+Vagrantfile
+Makefile

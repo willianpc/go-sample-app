@@ -24,5 +24,5 @@ func init() {
 func main() {
 	http.HandleFunc("/query", handleSearch)
 
-	log.Fatal(http.ListenAndServe("localhost:9090", nil))
+	log.Fatal(http.ListenAndServe(":9090", nil))
 }

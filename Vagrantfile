@@ -12,7 +12,8 @@ Vagrant.configure("2") do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://vagrantcloud.com/search.
-  config.vm.box = "hashicorp/bionic64"
+  # config.vm.box = "hashicorp/bionic64"
+  config.vm.box = "ubuntu/mantic64"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -70,8 +71,9 @@ Vagrant.configure("2") do |config|
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
     apt-get update
-    curl -L -o go1.21.4.tar.gz https://go.dev/dl/go1.21.4.linux-amd64.tar.gz
-    tar -xzf go1.21.4.tar.gz
+    sudo apt-get install -y build-essential make
+    # curl -L -o go1.21.4.tar.gz https://go.dev/dl/go1.21.4.linux-amd64.tar.gz
+    # tar -xzf go1.21.4.tar.gz
     # echo "export PATH=$PATH:$HOME/go/bin" >> $HOME/.profile
     # source $HOME/.profile
     curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
