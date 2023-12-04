@@ -14,7 +14,7 @@ var (
 )
 
 func init() {
-	rdb = redis.NewClient(&redis.Options{Addr: ":6379"})
+	rdb = redis.NewClient(&redis.Options{Addr: "redis.default.svc.cluster.local:6379"})
 
 	c = &http.Client{
 		Timeout: time.Second * 30,

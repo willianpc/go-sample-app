@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: go-sample-app
+  name: go-sample-app
+spec:
+  ports:
+  - port: 9090
+    protocol: TCP
+    targetPort: 9090
+  selector:
+    app: go-sample-app
+  type: NodePort
+status:
+  loadBalancer: {}
