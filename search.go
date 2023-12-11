@@ -45,7 +45,7 @@ func dataFromGoogle(incomingRequest *http.Request, q string) []string {
 	var cacheRes []string
 
 	clientReq, _ := http.NewRequest(http.MethodGet, "https://www.google.com/search?q="+q, nil)
-	clientResp, _ := c.Do(clientReq)
+	clientResp, _ := c.Do(clientReq.WithContext(incomingRequest.Context()))
 
 	body, _ := io.ReadAll(clientResp.Body)
 	defer clientResp.Body.Close()

@@ -1,0 +1,32 @@
+FROM icr.io/instana/agent AS build
+
+VOLUME [ "/var/run" ]
+VOLUME [ "/run" ]
+VOLUME [ "/dev:ro" ]
+VOLUME [ "/sys:ro" ]
+VOLUME [ "/var/log:ro" ]
+
+ENV INSTANA_AGENT_ENDPOINT=ingress-red-saas.instana.io
+ENV INSTANA_AGENT_ENDPOINT_PORT=443
+ENV INSTANA_AGENT_KEY=nqtbV5cEQ5ev0MFzOIwskg
+ENV INSTANA_DOWNLOAD_KEY=nqtbV5cEQ5ev0MFzOIwskg
+ENV INSTANA_AGENT_ZONE=willian-zone
+
+
+# sudo docker run \
+#    --detach \
+#    --name instana-agent \
+#    --volume /var/run:/var/run \
+#    --volume /run:/run \
+#    --volume /dev:/dev:ro \
+#    --volume /sys:/sys:ro \
+#    --volume /var/log:/var/log:ro \
+#    --privileged \
+#    --net=host \
+#    --pid=host \
+#    --env="INSTANA_AGENT_ENDPOINT=ingress-red-saas.instana.io" \
+#    --env="INSTANA_AGENT_ENDPOINT_PORT=443" \
+#    --env="INSTANA_AGENT_KEY=nqtbV5cEQ5ev0MFzOIwskg" \
+#    --env="INSTANA_DOWNLOAD_KEY=nqtbV5cEQ5ev0MFzOIwskg" \
+#    --env="INSTANA_AGENT_ZONE=willian-zone" \
+#    icr.io/instana/agent
